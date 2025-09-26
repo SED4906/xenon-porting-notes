@@ -1,14 +1,16 @@
 # Xenon (Xbox 360) porting notes
-The [gcc-xenon.patch](gcc-xenon.patch) adds a mask option to GCC, `-mvmx128`.
+The included [gcc-xenon.patch](gcc-xenon.patch) here adds a mask option to GCC, `-mvmx128`.
 When used with `-maltivec`, it disables several instructions missing from Xenon.
 I recommend to also use `-mcpu=cell`, because it enables the other instructions.
 This should allow a proper 64-bit userland to be built for the Xbox 360!
 
 ## Gentoo (with Crossdev)
 Place the patch in `/etc/portage/patches/cross-powerpc64-unknown-linux-gnu/gcc/` before running `crossdev --target powerpc64-unknown-linux-gnu`.
-I would also recommend copying it to `/usr/powerpc64-unknown-linux-gnu/etc/portage/patches/sys-devel/gcc/` so that when GCC itself is cross-compiled later, it retains the patch.
+I would also recommend copying it to `/usr/powerpc64-unknown-linux-gnu/etc/portage/patches/sys-devel/gcc/` afterwards, so that when GCC itself is cross-compiled later, it retains the patch.
 
 You should then be able to add `-mcpu=cell -maltivec -mvmx128` to CFLAGS.
+
+Unfortunately, Rust is not currently supported for the `powerpc64-unknown-linux-gnu` target. Use a custom profile with WD-40.
 
 Some notes about cross-compiling certain packages:
 
