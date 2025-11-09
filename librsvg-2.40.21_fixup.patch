@@ -1,0 +1,64 @@
+Fix warnings and errors from enhanced deprecation and type checking introduced with gcc 14. Also fixes the use of a deprecated header.
+
+  rsvg-css.c: In function 'rsvg_css_parse_xml_attribute_string':
+  rsvg-css.c:866:20: error: assignment to 'xmlStructuredErrorFunc' {aka 'void (*)(void *, const struct _xmlError *)'} from incompatible pointer type 'void (*)(void *, xmlError *)' {aka 'void (*)(void *, struct _xmlError *)'} [-Wincompatible-pointer-types]
+    866 |     handler.serror = rsvg_xml_noerror;
+        |                    ^
+  
+  rsvg-gobject.c: In function 'rsvg_handle_init':
+  rsvg-gobject.c:68:13: warning: Deprecated pre-processor symbol: replace with "G_ADD_PRIVATE"
+     68 |     self->priv = G_TYPE_INSTANCE_GET_PRIVATE (self, RSVG_TYPE_HANDLE, RsvgHandlePrivate);
+        |             ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  rsvg-gobject.c: In function 'rsvg_handle_class_init':
+  rsvg-gobject.c:327:5: warning: 'g_type_class_add_private' is deprecated [-Wdeprecated-declarations]
+    327 |     g_type_class_add_private (klass, sizeof (RsvgHandlePrivate));
+        |     ^~~~~~~~~~~~~~~~~~~~~~~~
+
+--- librsvg-2.40.21/rsvg-css.c.orig	2018-10-01 18:50:22.000000000 -0400
++++ librsvg-2.40.21/rsvg-css.c	2024-11-21 22:57:50.000000000 -0500
+@@ -839,7 +839,7 @@
+ }
+ 
+ static void
+-rsvg_xml_noerror (void *data, xmlErrorPtr error)
++rsvg_xml_noerror (void *data, const xmlError *error)
+ {
+ }
+ 
+--- librsvg-2.40.21/rsvg-gobject.c.orig	2018-10-01 18:50:22.000000000 -0400
++++ librsvg-2.40.21/rsvg-gobject.c	2024-11-21 22:21:11.000000000 -0500
+@@ -60,12 +60,12 @@
+ extern double rsvg_internal_dpi_x;
+ extern double rsvg_internal_dpi_y;
+ 
+-G_DEFINE_TYPE (RsvgHandle, rsvg_handle, G_TYPE_OBJECT)
++G_DEFINE_TYPE_WITH_PRIVATE (RsvgHandle, rsvg_handle, G_TYPE_OBJECT)
+ 
+ static void
+ rsvg_handle_init (RsvgHandle * self)
+ {
+-    self->priv = G_TYPE_INSTANCE_GET_PRIVATE (self, RSVG_TYPE_HANDLE, RsvgHandlePrivate);
++    self->priv = rsvg_handle_get_instance_private (self);
+ 
+     self->priv->flags = RSVG_HANDLE_FLAGS_NONE;
+     self->priv->state = RSVG_HANDLE_STATE_START;
+@@ -324,8 +324,6 @@
+                                                           _("SVG file metadata"), NULL,
+                                                           (GParamFlags) (G_PARAM_READABLE)));
+ 
+-    g_type_class_add_private (klass, sizeof (RsvgHandlePrivate));
+-
+     xmlInitParser ();
+ 
+     rsvg_SAX_handler_struct_init ();
+--- librsvg-2.40.21/rsvg-private.h.orig	2025-10-31 06:31:24.878720945 -0700
++++ librsvg-2.40.21/rsvg-private.h	2025-10-31 06:31:49.679367931 -0700
+@@ -31,7 +31,7 @@
+ 
+ #include "rsvg.h"
+ 
+-#include <libxml/SAX.h>
++#include <libxml/parser.h>
+ #include <libxml/xmlmemory.h>
+ #include <pango/pango.h>
+ #include <glib.h>

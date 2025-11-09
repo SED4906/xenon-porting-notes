@@ -33,7 +33,7 @@ perl-cross for version `5.42.0` (the latest testing) bails out.
 Don't put `~ppc64` in ACCEPT_KEYWORDS for now. You don't need it.
 
 ### gnome-base/librsvg
-While not a cross-compilation bug, [bug 944392](https://bugs.gentoo.org/944392) has a patch attached to the bug report that fixes a build error in version 2.40.21 due to GCC 14 making some warnings into errors by default.
+While not a cross-compilation bug, [librsvg-2.40.21_fixup.patch](librsvg-2.40.21_fixup.patch) fixes a build error in version 2.40.21 due to GCC 14 making some warnings into errors by default (see [bug 944392](https://bugs.gentoo.org/944392)), and another build error due to the use of a deprecated header from libxml2.
 
 Copy the patch to `/usr/powerpc64-unknown-linux-gnu/etc/portage/patches/gnome-base/librsvg/`.
 
@@ -89,6 +89,8 @@ media-libs/libjpeg-turbo no-altivec.conf
 ```
 
 ### dev-perl/XML-Parser
+(This is probably optional)
+
 A check in the ebuild added to fix a different bug fails here.
 It tries to run `find "${D}" -name Expat.so | grep Expat || die "Something went badly wrong, can't find Expat.so. Please file a bug."` on the target with QEMU's usermode emulation, which ends up failing due to an endianness mismatch from `libsandbox.so` in LD_PRELOAD.
 
